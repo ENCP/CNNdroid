@@ -1,0 +1,214 @@
+root_directory: "/sdcard/Data_NIN/"
+
+allocated_ram: 50
+
+program_mode: "parallel"
+
+layer {
+  type: "Convolution"
+  name: "conv1"
+  parameters_file: "model_param_conv1.msg"
+  pad: 0
+  stride: 4
+  group: 1
+}
+
+layer {
+	type: "ReLU"
+	name: "relu0"
+}
+
+layer {
+  type: "Convolution"
+  name: "cccp1"
+  parameters_file: "model_param_cccp1.msg"
+  pad: 0
+  stride: 1
+  group: 1
+}
+
+layer {
+	type: "ReLU"
+	name: "relu1"
+}
+
+layer {
+  type: "Convolution"
+  name: "cccp2"
+  parameters_file: "model_param_cccp2.msg"
+  pad: 0
+  stride: 1
+  group: 1
+}
+
+layer {
+	type: "ReLU"
+	name: "relu2"
+}
+
+layer {
+  type: "Pooling"
+  name: "pool0"
+  pool: "max"
+  kernel_size: 3
+  pad: 0
+  stride: 2
+}
+
+layer {
+  type: "Convolution"
+  name: "conv2"
+  parameters_file: "model_param_conv2.msg"
+  pad: 2
+  stride: 1
+  group: 1
+}
+
+layer {
+	type: "ReLU"
+	name: "relu3"
+}
+
+layer {
+  type: "Convolution"
+  name: "cccp3"
+  parameters_file: "model_param_cccp3.msg"
+  pad: 0
+  stride: 1
+  group: 1
+}
+
+layer {
+	type: "ReLU"
+	name: "relu5"
+}
+
+layer {
+  type: "Convolution"
+  name: "cccp4"
+  parameters_file: "model_param_cccp4.msg"
+  pad: 0
+  stride: 1
+  group: 1
+}
+
+layer {
+	type: "ReLU"
+	name: "relu6"
+}
+
+layer {
+  type: "Pooling"
+  name: "pool2"
+  pool: "max"
+  kernel_size: 3
+  pad: 0
+  stride: 2
+}
+
+layer {
+  type: "Convolution"
+  name: "conv3"
+  parameters_file: "model_param_conv3.msg"
+  pad: 1
+  stride: 1
+  group: 1
+}
+
+layer {
+	type: "ReLU"
+	name: "relu7"
+}
+
+layer {
+  type: "Convolution"
+  name: "cccp5"
+  parameters_file: "model_param_cccp5.msg"
+  pad: 0
+  stride: 1
+  group: 1
+}
+
+layer {
+	type: "ReLU"
+	name: "relu8"
+}
+
+layer {
+  type: "Convolution"
+  name: "cccp6"
+  parameters_file: "model_param_cccp6.msg"
+  pad: 0
+  stride: 1
+  group: 1
+}
+
+layer {
+	type: "ReLU"
+	name: "relu9"
+}
+
+layer {
+  type: "Pooling"
+  name: "pool3"
+  pool: "max"
+  kernel_size: 3
+  pad: 0
+  stride: 2
+}
+
+layer {
+  type: "Convolution"
+  name: "conv4-1024"
+  parameters_file: "model_param_conv4-1024.msg"
+  pad: 1
+  stride: 1
+  group: 1
+}
+
+layer {
+	type: "ReLU"
+	name: "relu10"
+}
+
+layer {
+  type: "Convolution"
+  name: "cccp7-1024"
+  parameters_file: "model_param_cccp7-1024.msg"
+  pad: 0
+  stride: 1
+  group: 1
+}
+
+layer {
+	type: "ReLU"
+	name: "relu11"
+}
+
+layer {
+  type: "Convolution"
+  name: "cccp8-1024"
+  parameters_file: "model_param_cccp8-1024.msg"
+  pad: 0
+  stride: 1
+  group: 1
+}
+
+layer {
+	type: "ReLU"
+	name: "relu12"
+}
+
+layer {
+  type: "Pooling"
+  name: "pool4"
+  pool: "ave"
+  kernel_size: 6
+  pad: 0
+  stride: 1
+}
+
+layer {
+  type: "Softmax"
+  name: "sm"
+}

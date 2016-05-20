@@ -1,0 +1,93 @@
+root_directory: "/sdcard/Data_Cifar10/"
+
+allocated_ram: 20
+
+program_mode: "parallel"
+
+layer {
+  type: "Convolution"
+  name: "conv1"
+  parameters_file: "model_param_conv1.msg"
+  pad: 2
+  stride: 1
+  group: 1
+}
+
+
+layer {
+  type: "Pooling"
+  name: "pool1"
+  pool: "max"
+  kernel_size: 3
+  pad: 0
+  stride: 2
+}
+
+layer {
+	type: "ReLU"
+	name: "ReLU1"
+}
+
+layer {
+  type: "Convolution"
+  name: "conv2"
+  parameters_file: "model_param_conv2.msg"
+  pad: 2
+  stride: 1
+  group: 1
+}
+
+layer {
+	type: "ReLU"
+	name: "ReLU2"
+}
+
+layer {
+  type: "Pooling"
+  name: "pool2"
+  pool: "ave"
+  kernel_size: 3
+  pad: 0
+  stride: 2
+}
+
+layer {
+  type: "Convolution"
+  name: "conv3"
+  parameters_file: "model_param_conv3.msg"
+  pad: 2
+  stride: 1
+  group: 1
+}
+
+layer {
+	type: "ReLU"
+	name: "ReLU3"
+}
+
+layer {
+  type: "Pooling"
+  name: "pool3"
+  pool: "ave"
+  kernel_size: 3
+  pad: 0
+  stride: 2
+}
+
+layer {
+  type: "FullyConnected"
+  name: "fc1"
+  parameters_file: "model_param_ip1.msg"
+}
+
+layer {
+  type: "FullyConnected"
+  name: "fc2"
+  parameters_file: "model_param_ip2.msg"
+}
+
+layer {
+  type: "Softmax"
+  name: "sm"
+}
+

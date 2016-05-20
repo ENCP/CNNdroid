@@ -1,0 +1,149 @@
+root_directory: "/sdcard/Data_ImageNet2012/"
+
+allocated_ram: 350
+
+program_mode: "sequential"
+
+layer {
+  type: "Convolution"
+  name: "conv1"
+  parameters_file: "model_param_conv1.msg"
+  pad: 0
+  stride: 4
+  group: 1
+}
+
+layer {
+	type: "ReLU"
+	name: "ReLU1"
+}
+
+layer { 
+  type: "LRN"
+  name: "norm1"
+  local_size: 5
+  alpha: 0.0001
+  beta: 0.75
+  norm_region: "across_channels"
+}
+
+
+layer {
+  type: "Pooling"
+  name: "pool1"
+  pool: "max"
+  kernel_size: 3
+  pad: 0
+  stride: 2
+}
+
+layer {
+  type: "Convolution"
+  name: "conv2"
+  parameters_file: "model_param_conv2.msg"
+  pad: 2
+  stride: 1
+  group: 2
+}
+
+layer {
+	type: "ReLU"
+	name: "ReLU2"
+}
+
+layer { 
+  type: "LRN"
+  name: "norm2"
+  local_size: 5
+  alpha: 0.0001
+  beta: 0.75
+  norm_region: "across_channels"
+}
+
+layer {
+  type: "Pooling"
+  name: "pool2"
+  pool: "max"
+  kernel_size: 3
+  pad: 0
+  stride: 2
+}
+
+layer {
+  type: "Convolution"
+  name: "conv3"
+  parameters_file: "model_param_conv3.msg"
+  pad: 1
+  stride: 1
+  group: 1
+}
+
+layer {
+	type: "ReLU"
+	name: "ReLU3"
+}
+
+layer {
+  type: "Convolution"
+  name: "conv4"
+  parameters_file: "model_param_conv4.msg"
+  pad: 1
+  stride: 1
+  group: 2
+}
+
+layer {
+	type: "ReLU"
+	name: "ReLU4"
+}
+
+layer {
+  type: "Convolution"
+  name: "conv5"
+  parameters_file: "model_param_conv5.msg"
+  pad: 1
+  stride: 1
+  group: 2
+}
+
+layer {
+	type: "ReLU"
+	name: "ReLU5"
+}
+
+layer {
+  type: "Pooling"
+  name: "pool5"
+  pool: "max"
+  kernel_size: 3
+  pad: 0
+  stride: 2
+}
+
+layer {
+  type: "FullyConnected"
+  name: "fc6"
+  parameters_file: "model_param_fc6.msg"
+}
+
+layer {
+	type: "ReLU"
+	name: "ReLU6"
+}
+
+layer {
+  type: "FullyConnected"
+  name: "fc7"
+  parameters_file: "model_param_fc7.msg"
+}
+
+layer {
+	type: "ReLU"
+	name: "ReLU7"
+}
+
+layer {
+  type: "FullyConnected"
+  name: "fc8"
+  parameters_file: "model_param_fc8.msg"
+}
