@@ -7,4 +7,4 @@ This virtual machine includes:
 * Theano
 * Torch7
 
-Here is the link to download the vm:	(The vm is being uploaded to the Google Drive and the link for the download will appear very soon.)
+Here is the link to download the vm:	[Download Link](https://www.dropbox.com/l/sh/H0xdGtPmN54xHwNUQjAGfs)
