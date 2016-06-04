@@ -352,7 +352,7 @@ public class CNNdroid {
             if (pool == null || pad == -1 || stride == -1 || kernelSize == -1)
                 return false;
             Pooling p = new Pooling(new int[]{kernelSize, kernelSize}, pool, new int[]{pad, pad},
-                    new int[]{stride, stride}, parallel, name);
+                    new int[]{stride, stride}, parallel, name, rootDir + tuningFolder);
             lastLayer = p;
             layers.add(p);
             return true;
@@ -379,7 +379,7 @@ public class CNNdroid {
             if (normRegion == null || localSize == -1 || alpha == -1.0 || beta == -1.0)
                 return false;
             LocalResponseNormalization lrn =  new LocalResponseNormalization(localSize, alpha, beta,
-                    normRegion, parallel, name);
+                    normRegion, parallel, name, rootDir + tuningFolder);
             lastLayer = lrn;
             layers.add(lrn);
             return true;
