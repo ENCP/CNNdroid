@@ -220,7 +220,7 @@ public class FullyConnected implements LayerInterface {
         float[] frameMatrix = new float[n_i * c_i_4];
         for (int n = 0 ; n < n_i ; n++)
             for (int i = 0 ; i < c_i_4 ; i++)
-                if (i < c_i_4)
+                if (i < c_i)
                     frameMatrix[n * w_w + i] = inputBlob4[n][i];
                 else
                     frameMatrix[n * w_w + i] = 0;
@@ -317,7 +317,7 @@ public class FullyConnected implements LayerInterface {
         float[] frameMatrix = new float[n_i * c_i_8];
         for (int n = 0 ; n < n_i ; n++)
             for (int i = 0 ; i < c_i_8 ; i++)
-                if (i < c_i_8)
+                if (i < c_i)
                     frameMatrix[n * w_w + i] = inputBlob4[n][i];
                 else
                     frameMatrix[n * w_w + i] = 0;
@@ -479,7 +479,7 @@ public class FullyConnected implements LayerInterface {
         }
 
         tuneTime = System.currentTimeMillis() - tuneTime;
-        Log.d("CNNdroid", "layers." + name + ": Tuning process finished in " + tuneTime + "mS!");
+        Log.d("CNNdroid", "layers." + name + ": Tuning process finished in " + tuneTime + "ms.");
         return output;
     }
 
