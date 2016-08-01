@@ -1,8 +1,8 @@
 # CNNdroid
-CNNdroid is an open source library for running trained convolutional neural networks on android.
+CNNdroid is an open source library for execution of trained convolutional neural networks on Android devices.
 The main highlights of CNNdroid are as follows:
 * Support for all major CNN layer types.
-* Compatible with CNN models trained by common desktop libraries, namely, [Caffe](http://caffe.berkeleyvision.org/), [Torch](http://torch.ch/) and [Theano](https://github.com/Theano/Theano)(Developers can easily port the trained models to Android by the help of provided scripts).
+* Compatible with CNN models trained by common desktop libraries, namely, [Caffe](http://caffe.berkeleyvision.org/), [Torch](http://torch.ch/) and [Theano](https://github.com/Theano/Theano) (Developers can easily port the trained models to Android by the help of provided scripts).
 * Easy to configure and integrate into any Android app without additional software requirements.
 * User-specified maximum memory usage.
 * Acceleration on both GPU and CPU.
