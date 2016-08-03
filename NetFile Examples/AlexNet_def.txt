@@ -147,3 +147,8 @@ layer {
   name: "fc8"
   parameters_file: "model_param_fc8.msg"
 }
+
+layer {
+  type: "Softmax"
+  name: "sm"
+}
