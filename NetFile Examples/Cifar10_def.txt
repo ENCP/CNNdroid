@@ -1,6 +1,6 @@
 root_directory: "/sdcard/Data_Cifar10/"
 
-allocated_ram: 20
+allocated_ram: 50
 
 program_mode: "parallel"
 
@@ -90,4 +90,3 @@ layer {
   type: "Softmax"
   name: "sm"
 }
-
