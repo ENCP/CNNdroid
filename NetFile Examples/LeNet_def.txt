@@ -1,6 +1,6 @@
 root_directory: "/sdcard/Data_LeNet5/"
 
-allocated_ram: 5
+allocated_ram: 20
 
 program_mode: "parallel"
 
