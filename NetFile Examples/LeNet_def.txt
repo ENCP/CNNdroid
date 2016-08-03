@@ -1,4 +1,4 @@
-root_directory: "/sdcard/Data_LeNet5/"
+root_directory: "/sdcard/Data_LeNet/"
 
 allocated_ram: 20
 
