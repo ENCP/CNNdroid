@@ -10,3 +10,11 @@ The main highlights of CNNdroid are as follows:
 * Up to 60X speedup and up to 130X energy saving on current mobile devices
 
 For more information about the library and installation guide, please refer to the [user guide](CNNdroid Complete Developers Guide and Installation Instruction.pdf).
+
+Please cite CNNdroid in your publications if it helps your research:
+@article{cnndroid2016,
+  Author = {Seyyed Salar Latifi Oskouei and Hossein Golestani and Matin Hashemi and Soheil Ghiasi},
+  Journal = {ACM Multimedia},
+  Title = {CNNdroid: GPU-Accelerated Execution of Trained Deep Convolutional Neural Networks on Android},
+  Year = {2016}
+}
