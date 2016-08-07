@@ -27,7 +27,8 @@ public class FullyConnected implements LayerInterface {
     private float[] weight; 			    // weight parameter of network
     private float[] bias;					// bias parameter of network
     private String tuningFolder;            // location to store online tuning results
-    private boolean tune;                   // flag to weather execute tuning ro not
+    private boolean tuneNow;                // flag to weather execute tuning ro not
+    private boolean tuneFunc;               // flag of optional tuning function
     private String algorithm;               // acceleration method
     private String[] names = {"F4F1", "F8F1"};
 
@@ -41,7 +42,7 @@ public class FullyConnected implements LayerInterface {
         None
     }
 
-    public FullyConnected(String paramFilePath, boolean parallel, boolean loadParamsAtStart, RenderScript myRS, String name, String tuningFolder) {
+    public FullyConnected(String paramFilePath, boolean parallel, boolean loadParamsAtStart, boolean tuneFunc, RenderScript myRS, String name, String tuningFolder) {
         this.paramFilePath = paramFilePath;
         this.parallel = parallel;
         this.myRS = myRS;
@@ -52,19 +53,25 @@ public class FullyConnected implements LayerInterface {
         this.paramUnpacker = new ParamUnpacker();
         this.loadParamsAtStart = loadParamsAtStart;
         this.tuningFolder = tuningFolder;
+        this.tuneFunc = tuneFunc;
 
-        tune = false;
+        tuneNow = false;
         File f = new File(tuningFolder + "/" + name + ".txt");
         try {
             Scanner s = new Scanner(f);
             algorithm = s.nextLine();
             if (corrupted(algorithm))
-                tune = true;
+                tuneNow = true;
         } catch (FileNotFoundException e) {
-            tune = true;
+            tuneNow = true;
+        }
+
+        if (!tuneFunc) {
+            algorithm = "F8F1";
+            tuneNow = false;
         }
 		  
-       if (loadParamsAtStart && (!tune || !parallel)) {
+       if (loadParamsAtStart && (!tuneNow || !parallel)) {
           long loadTime = System.currentTimeMillis();
           Object[] objects = paramUnpacker.unpackerFunction(paramFilePath, new Class[]{float[].class, float[].class});
           weight = (float[]) objects[0];
@@ -98,7 +105,7 @@ public class FullyConnected implements LayerInterface {
     @Override
     public Object compute(Object input) {
         long loadTime;
-        if (!loadParamsAtStart && (!tune || !parallel)) {
+        if (!loadParamsAtStart && (!tuneNow || !parallel)) {
 		    loadTime = System.currentTimeMillis();
 
 		    Object[] objects = paramUnpacker.unpackerFunction(paramFilePath, new Class[]{float[].class, float[].class});
@@ -439,13 +446,13 @@ public class FullyConnected implements LayerInterface {
         Object[] objects = paramUnpacker.unpackerFunction(paramFilePath, new Class[]{float[].class, float[].class});
         float[] myWeight = (float[]) objects[0];
         float[] myBias = (float[]) objects[1];
-        tune = false;
+        tuneNow = false;
         long[] time = new long[]{0, 0};
         long temp;
 
         Object output = null;
 
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < 2; i++) {
             temp = System.currentTimeMillis();
             initKernelF4F1(myWeight, myBias);
             fullyConnectedLayerInF4OutF1(input, myWeight, myBias, true);
@@ -512,7 +519,7 @@ public class FullyConnected implements LayerInterface {
                 output = fullyConnectedLayerSeq((float[][]) input, myWeight, myBias);
         }
         else {
-            if (tune) {
+            if (tuneNow) {
                 if (input.getClass().toString().equals("class [[[[F"))
                     output = tuneFunction((float[][][][]) input);
                 else

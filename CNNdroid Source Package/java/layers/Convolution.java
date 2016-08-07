@@ -28,11 +28,12 @@ public class Convolution implements LayerInterface {
     private boolean nonLinear;              // Does a non-linear layer follow this layer?
     private NonLinearType nonLinearType;    // non-linearity type (if applicable)
     private boolean parallel;               // implementation method (parallel or sequential)
-    private boolean loadParamsAtStart;        // if true, layer parameters will be loaded at the construction of network, otherwise the parameters will be loaded in run time
-    private float[][][][] weight;            // weight parameter of network
-    private float[] bias;                    // bias parameter of network
+    private boolean loadParamsAtStart;      // if true, layer parameters will be loaded at the construction of network, otherwise the parameters will be loaded in run time
+    private float[][][][] weight;           // weight parameter of network
+    private float[] bias;                   // bias parameter of network
     private String tuningFolder;            // location to store online tuning results
-    private boolean tune;                   // flag to weather execute tuning ro not
+    private boolean tuneNow;                // flag to weather execute tuning ro not
+    private boolean tuneFunc;               // flag of optional tuning function
     private String algorithm;               // acceleration method
     private String[] names = {"F4F1", "F4F2", "F4F4", "F4F8", "F8F1", "F8F2", "F8F4", "F8F8"};
 
@@ -52,7 +53,7 @@ public class Convolution implements LayerInterface {
         None
     }
 
-    public Convolution(int[] stride, int[] pad, int group, String paramFilePath, boolean parallel, boolean loadParamsAtStart, RenderScript myRS, String name, String tuningFolder) {
+    public Convolution(int[] stride, int[] pad, int group, String paramFilePath, boolean parallel, boolean loadParamsAtStart, boolean tuneFunc, RenderScript myRS, String name, String tuningFolder) {
         this.paramFilePath = paramFilePath;
         this.stride = stride;
         this.pad = pad;
@@ -65,20 +66,26 @@ public class Convolution implements LayerInterface {
         this.myNum = new MyNum();
         this.paramUnpacker = new ParamUnpacker();
         this.loadParamsAtStart = loadParamsAtStart;
+        this.tuneFunc = tuneFunc;
         this.tuningFolder = tuningFolder;
 
-        tune = false;
+        tuneNow = false;
         File f = new File(tuningFolder + "/" + name + ".txt");
         try {
             Scanner s = new Scanner(f);
             algorithm = s.nextLine();
             if (corrupted(algorithm))
-                tune = true;
+                tuneNow = true;
         } catch (FileNotFoundException e) {
-            tune = true;
+            tuneNow = true;
         }
 
-        if (loadParamsAtStart && (!tune || !parallel)) {
+        if (!tuneFunc) {
+            algorithm = "F8F4";
+            tuneNow = false;
+        }
+
+        if (loadParamsAtStart && (!tuneNow || !parallel)) {
             long loadTime = System.currentTimeMillis();
 
             Object[] objects = paramUnpacker.unpackerFunction(paramFilePath, new Class[]{float[][][][].class, float[].class});
@@ -132,7 +139,7 @@ public class Convolution implements LayerInterface {
     public Object compute(Object input) {
 
         long loadTime;
-        if (!loadParamsAtStart && (!tune || !parallel)) {
+        if (!loadParamsAtStart && (!tuneNow || !parallel)) {
             loadTime = System.currentTimeMillis();
 
             Object[] objects = paramUnpacker.unpackerFunction(paramFilePath, new Class[]{float[][][][].class, float[].class});
@@ -2038,7 +2045,7 @@ public class Convolution implements LayerInterface {
         Object[] objects = paramUnpacker.unpackerFunction(paramFilePath, new Class[]{float[][][][].class, float[].class});
         float[][][][] myWeight = (float[][][][]) objects[0];
         float[] myBias = (float[]) objects[1];
-        tune = false;
+        tuneNow = false;
         long[] time = new long[]{0, 0, 0, 0};
         long temp;
         int c_i = input[0].length;
@@ -2046,7 +2053,7 @@ public class Convolution implements LayerInterface {
         tuneInput[0] = input[0];
 
         if (c_i < 5) {
-            for (int i = 0; i < 4; i++) {
+            for (int i = 0; i < 2; i++) {
                 temp = System.currentTimeMillis();
                 initKernelF4F1(myWeight, myBias);
                 convLayerRolledParInF4OutF1(tuneInput, myWeight, true);
@@ -2075,7 +2082,7 @@ public class Convolution implements LayerInterface {
 
             algorithm = names[min];
         } else {
-            for (int i = 0; i < 3; i++) {
+            for (int i = 0; i < 2; i++) {
                 temp = System.currentTimeMillis();
                 initKernelF8F1(myWeight, myBias);
                 convLayerRolledParInF8OutF1(tuneInput, myWeight, true);
@@ -2140,7 +2147,7 @@ public class Convolution implements LayerInterface {
             }
         }
         tuneTime = System.currentTimeMillis() - tuneTime;
-        Log.d("CNNdroid", "layers." + name + ": Tuning process finished in " + tuneTime + "mS!");
+        Log.d("CNNdroid", "layers." + name + ": Tuning process finished in " + tuneTime + "ms.");
         return output;
     }
 
@@ -2153,7 +2160,7 @@ public class Convolution implements LayerInterface {
         if (!parallel)
             output = convLayerRolledSeq((float[][][][]) input, myWeight, myBias, pad, stride, group);
         else {
-            if (tune) {
+            if (tuneNow) {
                 output = tuneFunction((float[][][][]) input);
             }
             else {

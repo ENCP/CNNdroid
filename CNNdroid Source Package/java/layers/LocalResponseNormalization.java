@@ -19,30 +19,37 @@ public class LocalResponseNormalization implements LayerInterface {
     private String normRegion;                  // norm region: "across_channels"
     private boolean parallel;                   // implementation method (parallel or sequential)
     private String tuningFolder;                // location to store online tuning results
-    private boolean tune;                       // flag to weather execute tuning ro not
+    private boolean tuneNow;                    // flag to weather execute tuning ro not
+    private boolean tuneFunc;                   // flag of optional tuning function
     private int threadCount;                    // thread count for acceleration
     private int[] threadCounts = {4, 6, 8};
 
     public LocalResponseNormalization(int localSize, double alpha, double beta, String normRegion,
-                                      boolean parallel, String name, String tuningFolder) {
+                                      boolean parallel, boolean tuneFunc, String name, String tuningFolder) {
         this.localSize = localSize;
         this.alpha = alpha;
         this.beta = beta;
         this.normRegion = normRegion;
         this.parallel = parallel;
+        this.tuneFunc = tuneFunc;
         this.name = name;
         myNum = new MyNum();
         this.tuningFolder = tuningFolder;
 
-        tune = false;
+        tuneNow = false;
         File f = new File(tuningFolder + "/" + name + ".txt");
         try {
             Scanner s = new Scanner(f);
             threadCount = Integer.valueOf(s.nextLine());
             if (corrupted(threadCount))
-                tune = true;
+                tuneNow = true;
         } catch (FileNotFoundException e) {
-            tune = true;
+            tuneNow = true;
+        }
+
+        if (!tuneFunc) {
+            threadCount = 4;
+            tuneNow = false;
         }
     }
 
@@ -55,7 +62,7 @@ public class LocalResponseNormalization implements LayerInterface {
 
         if (!parallel)
             output = lrnLayerSeq((float[][][][])input, localSize, alpha, beta, normRegion);
-        else if (tune)
+        else if (tuneNow)
             output = tuneFunction((float[][][][]) input);
         else
             output = lrnLayerMultithread((float[][][][]) input, localSize, alpha, beta, normRegion, threadCount);
@@ -160,7 +167,7 @@ public class LocalResponseNormalization implements LayerInterface {
         Log.d("CNNdroid", "layers." + name + ": Tuning process is starting...");
         long tuneTime = System.currentTimeMillis();
 
-        tune = false;
+        tuneNow = false;
         long[] time = new long[threadCounts.length];
         for (int i = 0 ; i < threadCounts.length ; i++)
             time[i] = 0;
