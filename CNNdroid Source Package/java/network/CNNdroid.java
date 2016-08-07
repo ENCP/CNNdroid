@@ -3,10 +3,7 @@ package network;
 import android.renderscript.RenderScript;
 import android.util.Log;
 
-//import com.androidconvnet.example.myapplication.R;
-
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -28,24 +25,25 @@ public class CNNdroid {
 
     private ArrayList<LayerInterface> layers;   // list of the network layers
     private boolean parallel;                   // implementation method (parallel or sequential)
-    private long allocatedRAM = MAX_PARAM_SIZE; // size of RAM allocated to the parameters
+    private boolean autoTuning;                 // auto-tuning (on or off)
+    private long allocatedRAM = -1;             // size of RAM allocated to the parameters
     private boolean[] loadtAtStart;             // whether or not the parameters should be loaded at start-up
     private int layerCounter = 0;               // counter for the layers which have parameters
     private String rootDir;                     // the root directory of network parameters file
     private String netStructureFile;            // the directory of the network definition file
     private RenderScript myRS;                  // RenderScript object
     private LayerInterface lastLayer = null;    // the last constructed layer
+    private boolean[] necessaryDefinition;      // execution_mode, auto_tuning
 
     public CNNdroid(RenderScript myRS, String netStructureFile) throws Exception {
         this.myRS = myRS;
         this.netStructureFile = netStructureFile;
 
+        necessaryDefinition = new boolean[2];
 
         layers = new ArrayList<>();
-        if (!preParse())
-            throw new Exception("CNNdroid parameter file does not exist.");
-        if (!parse())
-            throw new Exception("CNNdroid parse error");
+        preParse();
+        parse();
         File f = new File(rootDir + tuningFolder);
         if (!f.exists())
             f.mkdir();
@@ -75,129 +73,154 @@ public class CNNdroid {
     }
 
     // Determine whether or not the parameters should be loaded at start-up.
-    private boolean preParse() {
+    private void preParse() throws Exception {
         File f = new File(netStructureFile);
         List<Long> paramSize = new ArrayList<>();
         Scanner s;
         String root = "";
 
-        try {
-            s = new Scanner(f);
-            while (s.hasNextLine()) {
-                String str = s.nextLine();
-                str = str.trim();
-                String strLow = str.toLowerCase();
-                if (strLow.startsWith("root_directory")) {
-                    str = str.substring(14);
-                    root = deriveStr(str);
-                }
-                else if (strLow.startsWith("allocated_ram")) {
-                    str = str.substring(13);
-                    long l = Long.parseLong(deriveNum(str));
-                    if (l < MAX_PARAM_SIZE)
-                        allocatedRAM = l * 1024 * 1024;
-                    else
-                        allocatedRAM = MAX_PARAM_SIZE;
-                }
-                else if (strLow.startsWith("parameters_file")) {
-                    str = str.substring(15);
-                    String fName = deriveStr(str);
-                    File pf = new File(root + fName);
-                    if (pf.exists())
-                        paramSize.add(pf.length());
-                    else {
-                        Log.d("CNNdroid", "Error: Missing parameters file \"" + str + "\"");
-                        return false;
-                    }
+        s = new Scanner(f);
+        while (s.hasNextLine()) {
+            String str = s.nextLine();
+            str = str.trim();
+            String strLow = str.toLowerCase();
+            if (strLow.startsWith("root_directory")) {
+                str = str.substring(14);
+                root = deriveStr(str);
+            }
+            else if (strLow.startsWith("allocated_ram")) {
+                str = str.substring(13);
+                long l = Long.parseLong(deriveNum(str));
+                if (l < MAX_PARAM_SIZE)
+                    allocatedRAM = l * 1024 * 1024;
+                else
+                    allocatedRAM = MAX_PARAM_SIZE;
+            }
+            else if (strLow.startsWith("parameters_file")) {
+                str = str.substring(15);
+                String fName = deriveStr(str);
+                File pf = new File(root + fName);
+                if (pf.exists())
+                    paramSize.add(pf.length());
+                else {
+                    Log.d("CNNdroid", "Error: Missing parameters file \"" + str + "\"");
+                    throw new Exception("CNNdroid parameter file does not exist.");
                 }
             }
-
-            long[] params = longArray(paramSize);
-            int[] index = mergeSort(params, 0, params.length - 1);
-
-            loadtAtStart = new boolean[params.length];
-
-            long sum = allocatedRAM;
-            for (int i = 0; i < params.length; ++i) {
-                if (sum - params[index[i]] >= 0) {
-                    sum -= params[index[i]];
-                    loadtAtStart[index[i]] = true;
-                }
-            }
-
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
         }
 
-        return true;
+        if (root.equals("")) {
+            Log.d("CNNdroid", "Error: root_directory is not specified in the network structure definition file");
+            throw new Exception("CNNdroid root directory is not specified.");
+        }
+        if (allocatedRAM == -1) {
+            Log.d("CNNdroid", "Error: allocated_ram is not specified in the network structure definition file");
+            throw new Exception("CNNdroid allocated RAM is not specified.");
+        }
+
+        long[] params = longArray(paramSize);
+        int[] index = mergeSort(params, 0, params.length - 1);
+
+        loadtAtStart = new boolean[params.length];
+
+        long sum = allocatedRAM;
+        for (int i = 0; i < params.length; ++i) {
+            if (sum - params[index[i]] >= 0) {
+                sum -= params[index[i]];
+                loadtAtStart[index[i]] = true;
+            }
+        }
     }
 
     // Parse the network definition file and construct layers.
-    private boolean parse() {
+    private void parse() throws Exception {
+        int layerNum = 0;
         File f = new File(netStructureFile);
-        try {
-            Scanner s = new Scanner(f);
+        Scanner s = new Scanner(f);
 
-            while (s.hasNextLine()) {
-                String str = s.nextLine();
-                str = str.trim();
-                String strLow = str.toLowerCase();
+        while (s.hasNextLine()) {
+            String str = s.nextLine();
+            str = str.trim();
+            String strLow = str.toLowerCase();
 
-                if (strLow.startsWith("root_directory")) {
-                    str = str.substring(14);
-                    str = deriveStr(str);
-                    if (str.equals("")) {
-                        Log.d("Network Structure:", "Error in root_directory definition");
-                        return false;
-                    }
-                    rootDir = str;
+            if (strLow.startsWith("root_directory")) {
+                str = str.substring(14);
+                str = deriveStr(str);
+                if (str.equals("")) {
+                    Log.d("CNNdroid", "Error: root_directory is not specified correctly in the network structure definition file");
+                    throw new Exception("CNNdroid root directory is not specified correctly.");
                 }
-                else if (strLow.startsWith("allocated_ram")) {
-                    str = str.substring(13);
-                    str = deriveNum(str);
-                    if (str.equals("")) {
-                        Log.d("Network Structure:", "Error in allocated_ram definition");
-                        return false;
-                    }
+                rootDir = str;
+            }
+            else if (strLow.startsWith("allocated_ram")) {
+                str = str.substring(13);
+                str = deriveNum(str);
+                if (str.equals("")) {
+                    Log.d("CNNdroid", "Error: allocated_ram is not specified correctly in the network structure definition file");
+                    throw new Exception("CNNdroid allocated RAM is not specified correctly.");
                 }
-                else if (strLow.startsWith("program_mode")) {
-                    strLow = strLow.substring(12);
-                    strLow = deriveStr(strLow);
-                    if (strLow.equals("parallel"))
-                        parallel = true;
-                    else if (strLow.equals("sequential"))
-                        parallel = false;
-                    else {
-                        Log.d("Network Structure:", "Error in program_mode definition");
-                        return false;
-                    }
+            }
+            else if (strLow.startsWith("execution_mode")) {
+                strLow = strLow.substring(14);
+                strLow = deriveStr(strLow);
+                if (strLow.equals("parallel"))
+                    parallel = true;
+                else if (strLow.equals("sequential"))
+                    parallel = false;
+                else {
+                    Log.d("CNNdroid", "Error: execution_mode is not specified correctly in the network structure definition file");
+                    throw new Exception("CNNdroid execution mode is not specified correctly.");
                 }
-                else if (strLow.startsWith("layer")) {
-                    str = str.substring(5);
-                    String tempStr;
-                    while (s.hasNextLine()) {
-                        str += "\n";
-                        tempStr = s.nextLine();
-                        str += tempStr;
-                        if (tempStr.contains("}"))
-                            break;
-                    }
-                    if (!deriveLayer(str)) {
-                        Log.d("Network Structure:", "Error in layer definition");
-                        return false;
-                    }
+                necessaryDefinition[0] = true;
+            }
+            else if (strLow.startsWith("auto_tuning")) {
+                strLow = strLow.substring(11);
+                strLow = deriveStr(strLow);
+                if (strLow.equals("on"))
+                    autoTuning = true;
+                else if (strLow.equals("off"))
+                    autoTuning = false;
+                else {
+                    Log.d("CNNdroid", "Error: auto_tuning is not specified correctly in the network structure definition file");
+                    throw new Exception("CNNdroid auto-tuning is not specified correctly.");
                 }
-                else if (strLow.equals(""))
-                    continue;
-                else
-                    return false;
+                necessaryDefinition[1] = true;
+            }
+            else if (strLow.startsWith("layer")) {
+                ++layerNum;
+                str = str.substring(5);
+                String tempStr;
+                while (s.hasNextLine()) {
+                    str += "\n";
+                    tempStr = s.nextLine();
+                    str += tempStr;
+                    if (tempStr.contains("}"))
+                        break;
+                }
+                if (!deriveLayer(str)) {
+                    Log.d("CNNdroid", "Error: Layer number " + layerNum + " is not defined correctly in the network structure definition file");
+                    throw new Exception("CNNdroid layer number " + layerNum + " is not defined correctly.");
+                }
+            }
+            else if (strLow.equals(""))
+                continue;
+            else
+            {
+                Log.d("CNNdroid", "Error in the network structure definition file: " + str);
+                throw new Exception("Error in CNNdroid network structure definition file: " + str);
             }
         }
-        catch (FileNotFoundException e) {
-            Log.d("Network Structure:", e.getMessage());
-            return false;
+
+        Log.d("#####", "Hello!");
+
+        if (!necessaryDefinition[0]) {
+            Log.d("CNNdroid", "Error: execution_mode is not specified in the network structure definition file");
+            throw new Exception("CNNdroid execution mode is not specified.");
         }
-        return true;
+        if (!necessaryDefinition[1]) {
+            Log.d("CNNdroid", "Error: auto_tuning is not specified in the network structure definition file");
+            throw new Exception("CNNdroid auto-tuning is not specified.");
+        }
     }
 
     private String deriveStr(String str) {
@@ -324,7 +347,7 @@ public class CNNdroid {
             if (parametersFile == null || pad == -1 || stride == -1 || group == -1)
                 return false;
             Convolution c = new Convolution(new int[]{stride, stride}, new int[]{pad, pad}, group,
-                    rootDir + parametersFile, parallel, loadtAtStart[layerCounter], myRS, name, rootDir + tuningFolder);
+                    rootDir + parametersFile, parallel, loadtAtStart[layerCounter], autoTuning, myRS, name, rootDir + tuningFolder);
             ++layerCounter;
             lastLayer = c;
             layers.add(c);
@@ -352,7 +375,7 @@ public class CNNdroid {
             if (pool == null || pad == -1 || stride == -1 || kernelSize == -1)
                 return false;
             Pooling p = new Pooling(new int[]{kernelSize, kernelSize}, pool, new int[]{pad, pad},
-                    new int[]{stride, stride}, parallel, name, rootDir + tuningFolder);
+                    new int[]{stride, stride}, parallel, autoTuning, name, rootDir + tuningFolder);
             lastLayer = p;
             layers.add(p);
             return true;
@@ -379,7 +402,7 @@ public class CNNdroid {
             if (normRegion == null || localSize == -1 || alpha == -1.0 || beta == -1.0)
                 return false;
             LocalResponseNormalization lrn =  new LocalResponseNormalization(localSize, alpha, beta,
-                    normRegion, parallel, name, rootDir + tuningFolder);
+                    normRegion, parallel, autoTuning, name, rootDir + tuningFolder);
             lastLayer = lrn;
             layers.add(lrn);
             return true;
@@ -396,7 +419,7 @@ public class CNNdroid {
             }
             if (parametersFile == null)
                 return false;
-            FullyConnected fc = new FullyConnected(rootDir + parametersFile, parallel, loadtAtStart[layerCounter], myRS, name, rootDir + tuningFolder);
+            FullyConnected fc = new FullyConnected(rootDir + parametersFile, parallel, loadtAtStart[layerCounter], autoTuning, myRS, name, rootDir + tuningFolder);
             ++layerCounter;
             lastLayer = fc;
             layers.add(fc);
