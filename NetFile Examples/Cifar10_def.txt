@@ -2,7 +2,9 @@ root_directory: "/sdcard/Data_Cifar10/"
 
 allocated_ram: 50
 
-program_mode: "parallel"
+execution_mode: "parallel"
+
+auto_tuning: "on"
 
 layer {
   type: "Convolution"
