@@ -2,7 +2,9 @@ root_directory: "/sdcard/Data_CaffeNet/"
 
 allocated_ram: 350
 
-program_mode: "parallel"
+execution_mode: "parallel"
+
+auto_tuning: "on"
 
 layer {
   type: "Convolution"
