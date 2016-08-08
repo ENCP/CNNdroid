@@ -2,7 +2,9 @@ root_directory: "/sdcard/Data_ImageNet2012/"
 
 allocated_ram: 350
 
-program_mode: "sequential"
+execution_mode: "parallel"
+
+auto_tuning: "on"
 
 layer {
   type: "Convolution"
