@@ -1,5 +1,5 @@
 ### Virtual Machine
-An Ubuntu 14.04(64bit) running virtual machine has been prepared in order to easily compile the source codes and test the parameter generation scripts.
+Ubuntu 14.04 (64bit) virtual machine has been prepared in order to easily compile the source codes and test the parameter generation scripts.
 This virtual machine includes:
 * CNNdroid Library Files:
 	* CNNdroid Source Files
@@ -14,3 +14,5 @@ This virtual machine includes:
 	* Torch7
 
 Here is the link to download the vm:	[Download Link](https://www.dropbox.com/l/sh/H0xdGtPmN54xHwNUQjAGfs)
+
+Note that the VM does not contain the most up-to-date version of the source codes and examples.
