@@ -2,8 +2,8 @@
 CNNdroid is an open source library for execution of trained convolutional neural networks on Android devices.
 The main highlights of CNNdroid are as follows:
 * Support for nearly all CNN layer types.
-* Compatible with CNN models trained by common desktop/server libraries, namely, [Caffe](http://caffe.berkeleyvision.org/), [Torch](http://torch.ch/) and [Theano](https://github.com/Theano/Theano) (Developers can easily port the trained models to Android by the help of provided scripts).
-* Easy to configure and integrate into any Android app without additional software requirements.
+* Compatible with CNN models trained by common desktop/server libraries, namely, [Caffe](http://caffe.berkeleyvision.org/), [Torch](http://torch.ch/) and [Theano](https://github.com/Theano/Theano) (Developers can easily convert the trained models to CNNdroid format using the provided scripts).
+* Easy to configure and integrate into any Android app in Android SDK without additional software requirements.
 * User-specified maximum memory usage.
 * GPU or CPU acceleration of supported CNN layers.
 * Automatic tuning of performance.
@@ -13,10 +13,13 @@ For more information about the library and installation guide, please refer to t
 
 Please cite CNNdroid in your publications if it helps your research:
 ```
-@article{cnndroid2016,
-  Author = {Seyyed Salar Latifi Oskouei and Hossein Golestani and Matin Hashemi and Soheil Ghiasi},
-  Journal = {ACM Multimedia},
-  Title = {CNNdroid: GPU-Accelerated Execution of Trained Deep Convolutional Neural Networks on Android},
-  Year = {2016}
+@inproceedings{cnndroid2016,
+ author = {Latifi Oskouei, Seyyed Salar and Golestani, Hossein and Hashemi, Matin and Ghiasi, Soheil},
+ title = {CNNdroid: GPU-Accelerated Execution of Trained Deep Convolutional Neural Networks on Android},
+ booktitle = {Proceedings of the 2016 ACM Multimedia Conference},
+ series = {MM '16},
+ year = {2016},
+ location = {Amsterdam, The Netherlands},
+ pages = {1201--1205}
 }
 ```
