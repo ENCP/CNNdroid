@@ -7,5 +7,6 @@ In this application, the camera module of smart-phone is used to take photo and 
 
 ####The application package contains:
 * APK file to install the application
-* Required parameters to successfully execute the CNN.
+* Required parameters to successfully execute the CNN
 * A text file including installation guide
+* Android Studio project source for the demo application
