@@ -10,3 +10,4 @@ In this application, the camera module of smart-phone is used to take photo and 
 * Required parameters to successfully execute the CNN.
 * A text file including installation guide
 * Android Studio project source for the demo application
+
