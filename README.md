@@ -16,7 +16,7 @@ Please cite CNNdroid in your publications if it helps your research:
 @inproceedings{cnndroid2016,
  author = {Latifi Oskouei, Seyyed Salar and Golestani, Hossein and Hashemi, Matin and Ghiasi, Soheil},
  title = {CNNdroid: GPU-Accelerated Execution of Trained Deep Convolutional Neural Networks on Android},
- booktitle = {Proceedings of the 2016 ACM Multimedia Conference},
+ booktitle = {Proceedings of the 2016 ACM on Multimedia Conference},
  series = {MM '16},
  year = {2016},
  location = {Amsterdam, The Netherlands},
