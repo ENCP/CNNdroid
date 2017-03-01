@@ -211,7 +211,6 @@ public class CNNdroid {
             }
         }
 
-        Log.d("#####", "Hello!");
 
         if (!necessaryDefinition[0]) {
             Log.d("CNNdroid", "Error: execution_mode is not specified in the network structure definition file");
@@ -327,9 +326,9 @@ public class CNNdroid {
         if (type.equalsIgnoreCase("Convolution"))
         {
             String parametersFile = null;
-            int pad = -1;
-            int stride = -1;
-            int group = -1;
+            int pad = 0;
+            int stride = 1;
+            int group = 1;
             for (int i = 0; i < args.size(); ++i) {
                 String tempArg = args.get(i);
                 String tempValue = values.get(i);
@@ -344,7 +343,7 @@ public class CNNdroid {
                 else
                     return false;
             }
-            if (parametersFile == null || pad == -1 || stride == -1 || group == -1)
+            if (parametersFile == null )
                 return false;
             Convolution c = new Convolution(new int[]{stride, stride}, new int[]{pad, pad}, group,
                     rootDir + parametersFile, parallel, loadtAtStart[layerCounter], autoTuning, myRS, name, rootDir + tuningFolder);
@@ -356,8 +355,8 @@ public class CNNdroid {
         else if (type.equalsIgnoreCase("Pooling")) {
             String pool = null;
             int kernelSize = -1;
-            int pad = -1;
-            int stride = -1;
+            int pad = 0;
+            int stride = 1;
             for (int i = 0; i < args.size(); ++i) {
                 String tempArg = args.get(i);
                 String tempValue = values.get(i);
@@ -372,7 +371,7 @@ public class CNNdroid {
                 else
                     return false;
             }
-            if (pool == null || pad == -1 || stride == -1 || kernelSize == -1)
+            if (pool == null || kernelSize == -1)
                 return false;
             Pooling p = new Pooling(new int[]{kernelSize, kernelSize}, pool, new int[]{pad, pad},
                     new int[]{stride, stride}, parallel, autoTuning, name, rootDir + tuningFolder);
@@ -530,5 +529,4 @@ public class CNNdroid {
     }
 
 }
-
 
